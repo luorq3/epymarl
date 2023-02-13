@@ -49,9 +49,16 @@ class Logger:
             i += 1
             window = 5 if k != "epsilon" else 1
             try:
-                item = "{:.4f}".format(np.mean([x[1] for x in self.stats[k][-window:]]))
+                item = "{:.4f}".format(np.mean([x[1].cpu() for x in self.stats[k][-window:]]))
             except:
-                item = "{:.4f}".format(np.mean([x[1].item() for x in self.stats[k][-window:]]))
+                xm = []
+                for x in self.stats[k][-window:]:
+                    if isinstance(x[1], float):
+                        xm.append(x[1])
+                    else:
+                        xm.append(x[1].item())
+                item = "{:.4f}".format(np.mean(xm))
+                # item = "{:.4f}".format(np.mean([x[1].item() for x in self.stats[k][-window:]]))
             log_str += "{:<25}{:>8}".format(k + ":", item)
             log_str += "\n" if i % 4 == 0 else "\t"
         self.console_logger.info(log_str)
