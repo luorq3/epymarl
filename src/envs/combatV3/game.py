@@ -10,10 +10,10 @@ import time
 
 class Game(gym.Env, MultiAgentEnv):
     def get_obs(self):
-        return self._get_state()
+        return self._get_obs()
 
     def get_obs_agent(self, agent_id):
-        return self._get_state()[agent_id]
+        return self._get_obs()[agent_id]
 
     def get_obs_size(self):
         return self._get_obs_dim()
@@ -22,25 +22,35 @@ class Game(gym.Env, MultiAgentEnv):
         return self._get_state()
 
     def get_state_size(self):
-        return self._get_obs_dim()
+        return self._get_state_dim()
 
     def get_avail_actions(self):
-        pass
+        move_actions = [1] * 5
+        avail_actions = [0 if fort.is_dead else 1 for fort in self.forts]
+        return [move_actions + avail_actions] * self.n_agents
 
-    def get_avail_agent_actions(self, agent_id):
-        pass
+    def get_avail_agent_actions(self, _):
+        move_actions = [1] * 5
+        avail_actions = [0 if fort.is_dead else 1 for fort in self.forts]
+        return move_actions + avail_actions
 
     def get_total_actions(self):
-        pass
+        return self._get_action_dim()
 
     def save_replay(self):
         pass
 
-    def __init__(self, map_size, n_ships, n_forts):
+    def __init__(self, key, time_limit, map_size, n_ships, n_forts, seed):
         super(Game, self).__init__()
+        self.key = key
+        self.episode_limit = time_limit
+        self.seed_ = seed
+
         self.map_size = map_size
         self.n_ships = n_ships
         self.n_forts = n_forts
+
+        self.n_agents = self.n_ships
 
         self.obs_dim = self._get_obs_dim()
         self.shared_obs_dim = self._get_obs_dim()
@@ -49,8 +59,13 @@ class Game(gym.Env, MultiAgentEnv):
         self.observation_space = [spaces.Box(low=np.inf, high=np.inf, shape=(self.obs_dim,), dtype=np.float32) for _ in range(self.n_ships)]
         self.share_observation_space = [spaces.Box(low=np.inf, high=np.inf, shape=(self.shared_obs_dim,), dtype=np.float32) for _ in range(self.n_ships)]
 
+        self.seed(self.seed_)
+
     def _get_obs_dim(self):
         return (self.n_ships + self.n_forts) * 3
+
+    def _get_state_dim(self):
+        return (self.n_ships + self.n_forts) * 2 + self.n_forts
 
     def _get_action_dim(self):
         return self.n_forts + 5
@@ -91,8 +106,20 @@ class Game(gym.Env, MultiAgentEnv):
             self.forts.append(Fort(idx, x, y))
 
     def _get_state(self):
+        pos = [[0, 0] if ship.is_dead else [ship.x, ship.y] for ship in self.ships]
+        fired_pos = [[-1, -1] if not fort.can_fire or fort.is_dead else [fort.action % self.map_size[0], fort.action // self.map_size[0]] for fort in self.forts]
+        forts_hp = [0 if fort.is_dead else fort.hp for fort in self.forts]
+
+        pos = np.array(pos, dtype=np.float).flatten()
+        fired_pos = np.array(fired_pos, dtype=np.float).flatten()
+        forts_hp = np.array(forts_hp).flatten()
+        state = np.concatenate((pos, fired_pos, forts_hp))
+
+        return state
+
+    def _get_obs(self):
         """
-        states: [自己的坐标，队友的坐标，被攻击的位置，对手的生命值，自己的索引值one-hot]
+        obs: [自己的坐标，队友的坐标，被攻击的位置，对手的生命值，自己的索引值one-hot]
         """
         states = []
         for ship in self.ships:
@@ -137,6 +164,7 @@ class Game(gym.Env, MultiAgentEnv):
         fort_actions = []
         for fort in self.forts:
             fort_actions.append(fort.action)
+        actions = actions.cpu()
         render_actions = np.concatenate((actions, fort_actions))
         if render:
             self.render(actions=render_actions)
@@ -232,14 +260,16 @@ class Game(gym.Env, MultiAgentEnv):
 
         # update fort action
         self._random_fort_action()
-        obs = self._get_state()
-        rewards = np.array([[reward] for _ in range(self.n_ships)], dtype=np.float32)
-        dones = (np.array([[ship.is_dead] for ship in self.ships]) | done).astype(np.float32)
-        return obs, rewards, dones, infos
+        # obs = self._get_obs()
+        # rewards = np.array([[reward] for _ in range(self.n_ships)], dtype=np.float32)
+        rewards = reward
+        # dones = (np.array([[ship.is_dead] for ship in self.ships]) | done).astype(np.float32)
+        dones = done
+        return rewards, dones, {}
 
     def reset(self):
-        self._init()
-        return self._get_state()
+        self._init(self.seed_)
+        return self._get_obs()
 
     def render(self, mode='human', actions=None):
         time.sleep(1)

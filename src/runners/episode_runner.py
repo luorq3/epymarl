@@ -52,7 +52,7 @@ class EpisodeRunner:
         episode_return = 0
         self.mac.init_hidden(batch_size=self.batch_size)
 
-        while not terminated:
+        while not terminated and self.t < self.episode_limit:
 
             pre_transition_data = {
                 "state": [self.env.get_state()],
