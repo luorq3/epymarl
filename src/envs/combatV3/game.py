@@ -1,5 +1,6 @@
 import numpy as np
 import gym
+import torch
 from gym import spaces
 import pygame
 from envs.combatV3.entities import Ship, Fort
@@ -36,6 +37,9 @@ class Game(gym.Env, MultiAgentEnv):
 
     def get_total_actions(self):
         return self._get_action_dim()
+
+    def get_stats(self):
+        return {}
 
     def save_replay(self):
         pass
@@ -164,7 +168,8 @@ class Game(gym.Env, MultiAgentEnv):
         fort_actions = []
         for fort in self.forts:
             fort_actions.append(fort.action)
-        actions = actions.cpu()
+        if isinstance(actions, torch.Tensor):
+            actions = actions.cpu()
         render_actions = np.concatenate((actions, fort_actions))
         if render:
             self.render(actions=render_actions)
