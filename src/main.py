@@ -109,7 +109,7 @@ if __name__ == '__main__':
     file_obs_path = os.path.join(results_path, f"sacred/{config_dict['name']}/{map_name}")
 
     # ex.observers.append(MongoObserver(url='172.18.217.20:27017', db_name="marlbench")) #url='172.18.217.20:27017'))
-    # ex.observers.append(FileStorageObserver.create(file_obs_path))
+    ex.observers.append(FileStorageObserver(file_obs_path))
     # ex.observers.append(MongoObserver())
 
     ex.run_commandline(params)

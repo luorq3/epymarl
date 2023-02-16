@@ -38,7 +38,7 @@ def run(_run, _config, _log):
         map_name = _config["env_args"]["map_name"]
     except:
         map_name = _config["env_args"]["key"]
-    unique_token = f"{_config['name']}_seed{_config['seed']}_{map_name}_{datetime.datetime.now()}"
+    unique_token = f"{_config['name']}_seed{_config['seed']}_{map_name}_{datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}"
 
     args.unique_token = unique_token
     if args.use_tensorboard:
@@ -48,11 +48,21 @@ def run(_run, _config, _log):
         tb_exp_direc = os.path.join(tb_logs_direc, "{}").format(unique_token)
         logger.setup_tb(tb_exp_direc)
 
+    if args.use_wandb:
+        wandb_logs_direc = os.path.join(
+            dirname(dirname(abspath(__file__))), "results", "wandb_logs"
+        )
+        wandb_logs_direc = os.path.join(wandb_logs_direc, "{}").format(unique_token)
+        logger.setup_wandb(args, wandb_logs_direc)
+
     # sacred is on by default
     logger.setup_sacred(_run)
 
     # Run and train
     run_sequential(args=args, logger=logger)
+
+    if args.use_wandb:
+        logger.close()
 
     # Clean up after finishing
     print("Exiting Main")

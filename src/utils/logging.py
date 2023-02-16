@@ -2,6 +2,9 @@ from collections import defaultdict
 import logging
 import numpy as np
 
+import wandb
+import socket
+
 class Logger:
     def __init__(self, console_logger):
         self.console_logger = console_logger
@@ -9,8 +12,23 @@ class Logger:
         self.use_tb = False
         self.use_sacred = False
         self.use_hdf = False
+        self.use_wandb = False
 
         self.stats = defaultdict(lambda: [])
+
+    def setup_wandb(self, args, wandb_logs_direc):
+        self.wandb_run = wandb.init(
+            config=args,
+            project=args.env,
+            group=args.env_args.key,
+            entity=args.wandb_user_name,
+            notes=socket.gethostname(),
+            name=args.unique_token,
+            dir=wandb_logs_direc,
+            job_type="training",
+            reinit=True
+        )
+        self.use_wandb = True
 
     def setup_tb(self, directory_name):
         # Import here so it doesn't have to be installed if you don't use it
@@ -29,6 +47,9 @@ class Logger:
 
         if self.use_tb:
             self.tb_logger(key, value, t)
+
+        if self.use_wandb:
+            wandb.log({key: value}, step=t)
 
         if self.use_sacred and to_sacred:
             if key in self.sacred_info:
@@ -62,6 +83,9 @@ class Logger:
             log_str += "{:<25}{:>8}".format(k + ":", item)
             log_str += "\n" if i % 4 == 0 else "\t"
         self.console_logger.info(log_str)
+
+    def close(self):
+        self.wandb_run.finish()
 
 
 # set up a custom logger
