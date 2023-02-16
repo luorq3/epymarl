@@ -25,7 +25,7 @@ class Logger:
             notes=socket.gethostname(),
             name=args.unique_token,
             dir=wandb_logs_direc,
-            job_type="training",
+            job_type=args.name,
             reinit=True
         )
         self.use_wandb = True
