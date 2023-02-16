@@ -19,7 +19,7 @@ class Logger:
     def setup_wandb(self, args, wandb_logs_direc):
         self.wandb_run = wandb.init(
             config=args,
-            project=args.env,
+            project=args.env + "_epymarl",
             group=args.env_args['key'],
             entity=args.wandb_user_name,
             notes=socket.gethostname(),
