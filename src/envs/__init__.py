@@ -137,8 +137,6 @@ class _GymmaWrapper(MultiAgentEnv):
         return flatdim(self.longest_observation_space)
 
     def get_state(self):
-        if self._info is not None and 'state' in self._info:
-            return self._info['state']
         return np.concatenate(self._obs, axis=0).astype(np.float32)
 
     def get_state_size(self):
@@ -148,8 +146,6 @@ class _GymmaWrapper(MultiAgentEnv):
         return self.n_agents * flatdim(self.longest_observation_space)
 
     def get_avail_actions(self):
-        if self._info is not None and 'avail_actions' in self._info:
-            return self._info['avail_actions']
         avail_actions = []
         for agent_id in range(self.n_agents):
             avail_agent = self.get_avail_agent_actions(agent_id)
@@ -169,7 +165,6 @@ class _GymmaWrapper(MultiAgentEnv):
 
     def reset(self):
         """ Returns initial observations and states"""
-        # self._obs, self._info = self._env.reset(return_info=True)
         self._obs = self._env.reset()
         self._obs = [
             np.pad(
