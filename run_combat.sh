@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # global
-config="vdn_ns"
+config="vdn"
 env_config="combat"
 t_max=500000
 runner="parallel"
