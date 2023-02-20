@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # global
-config="vdn"
+config="vdn_ns"
 env_config="combat"
 t_max=500000
 runner="parallel"
@@ -9,7 +9,7 @@ batch_size_run=10
 
 # env_args
 time_limit=200
-n_ships=(2 3 5 8 12)
+n_ships=(9 10)
 n_fort=50
 
 

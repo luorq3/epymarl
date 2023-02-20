@@ -12,19 +12,18 @@ runner: "episode"
 buffer_size: 5000
 
 # update the target network every {} episodes
-target_update_interval_or_tau: 200
+target_update_interval_or_tau: 1000
 
 obs_agent_id: False
 obs_last_action: False
 obs_individual_obs: False
-
+use_rnn: False
 
 # use the Q_Learner to train
 mac: "non_shared_mac"
 agent: "rnn_ns"
 standardise_returns: False
 standardise_rewards: True
-use_rnn: False
 agent_output_type: "q"
 learner: "q_learner"
 double_q: True
