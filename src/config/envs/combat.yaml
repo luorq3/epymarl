@@ -6,6 +6,7 @@ env_args:
   map_size: [50, 50]
   n_ships: 5
   n_forts: 50
+  param_share: True
 
 
 test_greedy: True

@@ -44,11 +44,14 @@ class Game(gym.Env, MultiAgentEnv):
     def save_replay(self):
         pass
 
-    def __init__(self, key, time_limit, map_size, n_ships, n_forts, seed):
+    def __init__(self, key, time_limit, map_size, n_ships, n_forts, seed, param_share):
         super(Game, self).__init__()
         self.key = key
         self.episode_limit = time_limit
         self.seed_ = seed
+
+        # If enable parameters sharing, obs will append a one-hot idx
+        self.ps = param_share
 
         self.map_size = map_size
         self.n_ships = n_ships
@@ -57,7 +60,7 @@ class Game(gym.Env, MultiAgentEnv):
         self.n_agents = self.n_ships
 
         self.obs_dim = self._get_obs_dim()
-        self.shared_obs_dim = self._get_obs_dim()
+        self.shared_obs_dim = self._get_state_dim()
         self.action_dim = self._get_action_dim()
         self.action_space = [spaces.Discrete(self.action_dim) for _ in range(self.n_ships)]
         self.observation_space = [spaces.Box(low=np.inf, high=np.inf, shape=(self.obs_dim,), dtype=np.float32) for _ in range(self.n_ships)]
@@ -66,7 +69,11 @@ class Game(gym.Env, MultiAgentEnv):
         self.seed(self.seed_)
 
     def _get_obs_dim(self):
-        return (self.n_ships + self.n_forts) * 3
+        if self.ps:
+            dim = (self.n_ships + self.n_forts) * 3
+        else:
+            dim = self._get_state_dim()
+        return dim
 
     def _get_state_dim(self):
         return (self.n_ships + self.n_forts) * 2 + self.n_forts
@@ -152,9 +159,12 @@ class Game(gym.Env, MultiAgentEnv):
             pos = np.array(pos, dtype=np.float).flatten()
             fired_pos = np.array(fired_pos, dtype=np.float).flatten()
             forts_hp = np.array(forts_hp).flatten()
-            one_hot_idx = np.zeros(self.n_ships)
-            one_hot_idx[ship.idx] = 1
-            state = np.concatenate((pos, fired_pos, forts_hp, one_hot_idx))
+            if self.ps:
+                one_hot_idx = np.zeros(self.n_ships)
+                one_hot_idx[ship.idx] = 1
+                state = np.concatenate((pos, fired_pos, forts_hp, one_hot_idx))
+            else:
+                state = np.concatenate((pos, fired_pos, forts_hp))
             states.append(state)
 
         states = np.array(states)
