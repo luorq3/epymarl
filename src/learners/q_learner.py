@@ -5,6 +5,7 @@ from modules.mixers.qmix import QMixer
 import torch as th
 from torch.optim import Adam
 from components.standarize_stream import RunningMeanStd
+from ..utils.rl_utils import build_td_lambda_targets
 
 
 class QLearner:
@@ -97,7 +98,11 @@ class QLearner:
             target_max_qvals = target_max_qvals * th.sqrt(self.ret_ms.var) + self.ret_ms.mean
 
         # Calculate 1-step Q-Learning targets
-        targets = rewards + self.args.gamma * (1 - terminated) * target_max_qvals.detach()
+        if self.args.td_lambda is not None:
+            targets = build_td_lambda_targets(rewards, terminated, mask, target_max_qvals,
+                                              self.args.n_agents, self.args.gamma, self.args.td_lambda)
+        else:
+            targets = rewards + self.args.gamma * (1 - terminated) * target_max_qvals.detach()
 
         if self.args.standardise_returns:
             self.ret_ms.update(targets)
