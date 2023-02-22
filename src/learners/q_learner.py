@@ -5,7 +5,7 @@ from modules.mixers.qmix import QMixer
 import torch as th
 from torch.optim import Adam
 from components.standarize_stream import RunningMeanStd
-from ..utils.rl_utils import build_td_lambda_targets
+from utils.rl_utils import build_td_lambda_targets
 
 
 class QLearner:
@@ -98,7 +98,7 @@ class QLearner:
             target_max_qvals = target_max_qvals * th.sqrt(self.ret_ms.var) + self.ret_ms.mean
 
         # Calculate 1-step Q-Learning targets
-        if self.args.td_lambda is not None:
+        if self.args.enable_td_lambda:
             targets = build_td_lambda_targets(rewards, terminated, mask, target_max_qvals,
                                               self.args.n_agents, self.args.gamma, self.args.td_lambda)
         else:
@@ -109,10 +109,12 @@ class QLearner:
             targets = (targets - self.ret_ms.mean) / th.sqrt(self.ret_ms.var)
 
         # Td-error
-        td_error = (chosen_action_qvals - targets.detach())
-
-        mask = mask.expand_as(td_error)
-
+        if self.args.enable_td_lambda:
+            td_error = (chosen_action_qvals[:, :-1] - targets.detach())
+            mask = mask[:, :-1].expand_as(td_error)
+        else:
+            td_error = (chosen_action_qvals - targets.detach())
+            mask = mask.expand_as(td_error)
         # 0-out the targets that came from padded data
         masked_td_error = td_error * mask
 
@@ -137,8 +139,8 @@ class QLearner:
             self.logger.log_stat("grad_norm", grad_norm.item(), t_env)
             mask_elems = mask.sum().item()
             self.logger.log_stat("td_error_abs", (masked_td_error.abs().sum().item()/mask_elems), t_env)
-            self.logger.log_stat("q_taken_mean", (chosen_action_qvals * mask).sum().item()/(mask_elems * self.args.n_agents), t_env)
-            self.logger.log_stat("target_mean", (targets * mask).sum().item()/(mask_elems * self.args.n_agents), t_env)
+            # self.logger.log_stat("q_taken_mean", (chosen_action_qvals * mask).sum().item()/(mask_elems * self.args.n_agents), t_env)
+            # self.logger.log_stat("target_mean", (targets * mask).sum().item()/(mask_elems * self.args.n_agents), t_env)
             self.log_stats_t = t_env
 
     def _update_targets_hard(self):

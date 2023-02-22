@@ -1,5 +1,12 @@
 # --- Defaults ---
 
+# --- Idea ---
+enable_td_lambda: False
+td_lambda: 0.6
+enable_anneal_td: False
+td_lambda_finish: 0.1 # If `anneal_td` is True, this is enabled
+td_lambda_anneal_time: 200000
+
 # --- pymarl options ---
 runner: "episode" # Runs 1 env for an episode
 mac: "basic_mac" # Basic controller
