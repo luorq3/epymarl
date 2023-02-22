@@ -16,7 +16,7 @@ class Logger:
 
         self.stats = defaultdict(lambda: [])
 
-    def setup_wandb(self, args, wandb_logs_direc):
+    def setup_wandb(self, args, wandb_logs_direc, fmt_time):
         self.wandb_run = wandb.init(
             config=args,
             project=args.env + "_epymarl",
@@ -25,7 +25,7 @@ class Logger:
             notes=socket.gethostname(),
             name=args.unique_token,
             dir=wandb_logs_direc,
-            job_type=args.name,
+            job_type=args.name + '-' + fmt_time,
             reinit=True
         )
         self.use_wandb = True

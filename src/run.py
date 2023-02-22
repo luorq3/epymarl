@@ -38,7 +38,8 @@ def run(_run, _config, _log):
         map_name = _config["env_args"]["map_name"]
     except:
         map_name = _config["env_args"]["key"]
-    unique_token = f"{_config['name']}_seed{_config['seed']}_{map_name}_{datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}"
+    fmt_time = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+    unique_token = f"{_config['name']}_seed{_config['seed']}_{map_name}_{fmt_time}"
 
     args.unique_token = unique_token
     if args.use_tensorboard:
@@ -53,7 +54,7 @@ def run(_run, _config, _log):
             dirname(dirname(abspath(__file__))), "results", "wandb_logs"
         )
         wandb_logs_direc = os.path.join(wandb_logs_direc, "{}").format(unique_token)
-        logger.setup_wandb(args, wandb_logs_direc)
+        logger.setup_wandb(args, wandb_logs_direc, fmt_time)
 
     # sacred is on by default
     logger.setup_sacred(_run)
