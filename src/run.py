@@ -54,7 +54,7 @@ def run(_run, _config, _log):
             dirname(dirname(abspath(__file__))), "results", "wandb_logs"
         )
         wandb_logs_direc = os.path.join(wandb_logs_direc, "{}").format(unique_token)
-        logger.setup_wandb(args, wandb_logs_direc, fmt_time)
+        logger.setup_wandb(args, wandb_logs_direc)
 
     # sacred is on by default
     logger.setup_sacred(_run)
