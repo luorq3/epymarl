@@ -5,8 +5,8 @@ import sys
 import numpy as np
 from gym import spaces
 
-from combatv4.util import load_scenario_conf
-from combatv4.agent import *
+from envs.combatv4.util import load_scenario_conf
+from envs.combatv4.agent import *
 
 
 def build_scenario(config):

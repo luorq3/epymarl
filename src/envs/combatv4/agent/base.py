@@ -4,8 +4,9 @@
 2: mobile fort
 3: scout drone
 """
-from combatv4.agent.util import *
+from envs.combatv4.agent.util import merge_visible_units
 from gym import spaces
+import numpy as np
 
 
 CONTROL_TYPES = {"agent": 0, "bot": 1}

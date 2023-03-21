@@ -2,9 +2,9 @@ import random
 
 import numpy as np
 
-from combatv4.multiagentenv import MultiAgentEnv
-from combatv4.combat_env_core import CombatEnvCore
-from combatv4.agent.base import CAMPS_TYPES as CAMPS
+from envs.multiagentenv import MultiAgentEnv
+from envs.combatv4.combat_env_core import CombatEnvCore
+from envs.combatv4.agent.base import CAMPS_TYPES as CAMPS
 
 
 class CombatEnv(MultiAgentEnv):

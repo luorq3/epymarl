@@ -1,5 +1,5 @@
 import numpy as np
-from combatv4.scenario_builder import build_scenario
+from envs.combatv4.scenario_builder import build_scenario
 
 
 class CombatEnvCore:
