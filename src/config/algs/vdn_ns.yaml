@@ -28,6 +28,7 @@ agent_output_type: "q"
 learner: "q_learner"
 double_q: True
 mixer: "vdn"
+hidden_dim: 128
 
 name: "vdn_ns"
 

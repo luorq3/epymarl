@@ -2,6 +2,7 @@ from functools import partial
 import pretrained
 from smac.env import MultiAgentEnv, StarCraft2Env
 from envs.combatV3.game import Game
+from envs.combatv4.combat_env_vs_bot import CombatEnv
 import sys
 import os
 import gym
@@ -19,6 +20,7 @@ REGISTRY = {}
 REGISTRY["sc2"] = partial(env_fn, env=StarCraft2Env)
 
 REGISTRY["combat"] = partial(env_fn, env=Game)
+REGISTRY["combatv4"] = partial(env_fn, env=CombatEnv)
 
 if sys.platform == "linux":
     os.environ.setdefault(

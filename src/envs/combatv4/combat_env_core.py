@@ -5,7 +5,7 @@ from envs.combatv4.scenario_builder import build_scenario
 class CombatEnvCore:
     def __init__(self, config):
         self._config = config
-        # self._init()
+        self._init()
 
     def _init(self):
         self._scenario = build_scenario(self._config)
@@ -19,7 +19,7 @@ class CombatEnvCore:
         self.bots_unique_idx = self._scenario.offensive_bots_id + self._scenario.defensive_bots_id
         self.state_dims = self._scenario.state_dims
         self.state_spaces = self._scenario.state_spaces
-
+        # [2,4, 3,5,..., 4,7,]
         # agents dict
         self.units_dict = self._scenario.units_dict
         for unit in self.units_dict.values():
@@ -63,6 +63,7 @@ class CombatEnvCore:
         return agent.get_avail_act()
 
     def step(self, actions):
+        assert len(self.agents_unique_idx) == len(actions), "Actions can't match agents."
         for unique_id, action in actions.items():
             agent = self.units_dict.get(unique_id)
             agent.set_action(action, self.units_dict, self.surface_map, self.air_map)
@@ -91,11 +92,12 @@ class CombatEnvCore:
         of_done = np.all(of_dones)
         de_done = np.all(de_dones)
 
+        done = of_done or de_done
         if self.reward_type == "dense":
             reward = rewards
         elif self.reward_type == "sparse":
             reward = {}
-            if of_done or de_done:
+            if done:
                 reward["offensive"] = float(de_done)
                 reward["defensive"] = float(of_done)
             else:
@@ -103,7 +105,14 @@ class CombatEnvCore:
         else:
             raise ValueError(f"Doesn't exists reward_type: {self.reward_type}")
 
-        done = of_done or de_done
         if done:
-            info["winner"] = "defensive" if of_done else "offensive"
+            info = {
+                "of_win": 0,
+                "de_win": 0
+            }
+            if of_done:
+                info["de_win"] = 1
+            if de_done:
+                info["of_win"] = 1
+
         return reward, done, info

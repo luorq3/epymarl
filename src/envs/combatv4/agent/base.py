@@ -122,8 +122,8 @@ class AgentBase:
         if target_unit.dead:
             target_map[x, y] = -1
             return 0
-        if self.camp == target_unit.camp:
-            raise ValueError(f"Unit-{self.unique_id} fired a ally unit-{target_unique_id}")
+        # if self.camp == target_unit.camp:
+        #     raise ValueError(f"Unit-{self.unique_id} fired a ally unit-{target_unique_id}")
         real_dmg = self.dmg if target_unit.hp > self.dmg else target_unit.hp
         target_unit.hp -= real_dmg
         if target_unit.dead:
@@ -224,6 +224,7 @@ class AgentBase:
             obs_dim += num_allies_agents
         self.num_allies_agents = num_allies_agents
         self.num_allies = num_allies
+        self.num_rivals = num_rivals
         self.obs_dim = obs_dim
         self.obs_space = spaces.Box(low=np.inf, high=np.inf, shape=(obs_dim, ), dtype=np.float32)
 
@@ -270,17 +271,12 @@ class ScoutDrone(AgentBase):
             if not is_visible:
                 continue
             unit = unit_dict.get(unique_id)
-            if unit.camp != self.camp or unit.dead:
+            if unit.camp != self.camp or unit.dead or not unit.can_receive_loc_info:
                 continue
             if self.camp == "offensive":
                 avail_advanced_act[unit.unique_id] = 1
             else:
-                avail_advanced_act[unit.unique_id - self.num_allies] = 1
-        # 没有必要分享信息给自己
-        if self.camp == "offensive":
-            avail_advanced_act[self.unique_id] = 0
-        else:
-            avail_advanced_act[self.unique_id - self.num_allies] = 0
+                avail_advanced_act[unit.unique_id - self.num_rivals] = 1
         return avail_advanced_act
 
     def set_property(self, num_rivals, num_allies, num_allies_agents, obs_with_agent_id):
@@ -296,6 +292,7 @@ class ScoutDrone(AgentBase):
             obs_dim += num_allies_agents
         self.num_allies_agents = num_allies_agents
         self.num_allies = num_allies
+        self.num_rivals = num_rivals
         self.obs_dim = obs_dim
         self.obs_space = spaces.Box(low=np.inf, high=np.inf, shape=(obs_dim,), dtype=np.float32)
 
