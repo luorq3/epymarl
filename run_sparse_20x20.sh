@@ -55,5 +55,3 @@ do
   python src/main.py --config=${config} --env-config=${env_config} with t_max=${t_max} env_args.time_limit=${time_limit} env_args.key="${key}" env_args.scenario="${scenario}" seed="${seed}" runner=${runner} batch_size_run=${batch_size_run} remark=${job_type} enable_td_lambda=${enable_td_lambda} enable_anneal_td=${enable_anneal_td} td_lambda_finish=${td_lambda_finish} td_lambda=${td_lambda} use_rnn=${use_rnn}
   echo "Done with key=${key} and seed=$seed."
 done
-
-# todo 1，采用随机策略测试胜率。2，增加step_limit。3，DouZero
